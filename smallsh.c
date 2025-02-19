@@ -96,7 +96,7 @@ int main()
         } else if (strcmp(curr_command->argv[0], "cd") == 0){
             built_in_cd(curr_command);
         } else if (strcmp(curr_command->argv[0], "status") == 0){
-            built_in_status(curr_command);
+            built_in_status();
         } //else {
             // calls external commands
         //}  
