@@ -1,1 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h> //EXIT_SUCCESS & EXIT_FAILURE
+#include <string.h> //File stuff
+#include <sys/stat.h> // for off_t
+#include <unistd.h> //what dis doo too?
+#include <dirent.h> //for directorys - ya dawg
+#include <fcntl.h> //what dis doo doooo
+#include <time.h>
+
+
+int main(){
+    return 0;
+}
