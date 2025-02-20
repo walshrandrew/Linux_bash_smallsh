@@ -20,6 +20,18 @@ struct command_line
     bool is_bg;
 };
 
+
+void free_command(struct command_line *curr_command){
+    if (curr_command){
+        if (curr_command->input_file) free(curr_command->input_file);
+        if (curr_command->output_file) free(curr_command->output_file);
+        for (int i = 0; i < curr_command->argc; i++) free(curr_command->argv[i]);
+        free(curr_command);
+    }
+
+}
+
+
 struct command_line *parse_input()
 {
     char input[INPUT_LENGTH];
@@ -112,6 +124,9 @@ void other_commands(struct command_line *curr_command){
 }
 
 
+
+
+
 int main()
 {
     struct command_line *curr_command;
@@ -120,12 +135,12 @@ int main()
         curr_command = parse_input();
 
         if (curr_command->argc == 0) {
-            free(curr_command);
+            free_command(curr_command);
             continue;
         }
 
         if (strcmp(curr_command->argv[0], "exit") == 0){
-            free(curr_command);
+            free_command(curr_command);
             built_in_exit();
         } else if (strcmp(curr_command->argv[0], "cd") == 0){
             built_in_cd(curr_command);
@@ -134,7 +149,7 @@ int main()
         } else {
             other_commands(curr_command);
         }  
-        free(curr_command);
+        free_command(curr_command);
     }
     return EXIT_SUCCESS;
 }
