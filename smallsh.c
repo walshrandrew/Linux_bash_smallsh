@@ -97,6 +97,7 @@ void built_in_status(){
 
 
 void other_commands(struct command_line *curr_command){
+    //while((pid = waitpid(-1, &wstatus, WNOHANG)) > 0) {...}
     pid_t p = fork();
     if(p<0){
         perror("Failed Fork");
