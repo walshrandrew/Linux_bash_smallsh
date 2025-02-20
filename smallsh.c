@@ -119,7 +119,13 @@ int main()
     {
         curr_command = parse_input();
 
+        if (curr_command->argc == 0) {
+            free(curr_command);
+            continue;
+        }
+
         if (strcmp(curr_command->argv[0], "exit") == 0){
+            free(curr_command);
             built_in_exit();
         } else if (strcmp(curr_command->argv[0], "cd") == 0){
             built_in_cd(curr_command);
@@ -128,7 +134,7 @@ int main()
         } else {
             other_commands(curr_command);
         }  
-
+        free(curr_command);
     }
     return EXIT_SUCCESS;
 }
