@@ -84,6 +84,34 @@ void built_in_status(){
 }
 
 
+void other_commands(struct command_line *curr_command){
+    pid_t p = fork();
+    if(p<0){
+        perror("Failed Fork");
+        exit(1);
+    } else if (p == 0){ //child processes
+        if(execvp(curr_command->argv[0], curr_command->argv) == -1){   // if execvp fails
+            perror("child command failed");
+            status = 1;                                                // update status
+            exit(1);                                                   // terminate child
+        }
+    }else {    // parent process
+        if (curr_command->is_bg){
+            return ;
+        } else { // wait for foreground child to finish
+            int child;
+            waitpid(p, &child, 0);
+
+            if (WIFEXITED(child)){
+                status = WEXITSTATUS(child);                        // storing exit status
+            } else if (WIFSIGNALED(child)){
+                status = WTERMSIG(child);                           // storing exit signal
+            }
+        }
+    }    
+}
+
+
 int main()
 {
     struct command_line *curr_command;
@@ -97,9 +125,9 @@ int main()
             built_in_cd(curr_command);
         } else if (strcmp(curr_command->argv[0], "status") == 0){
             built_in_status();
-        } //else {
-            // calls external commands
-        //}  
+        } else {
+            other_commands(curr_command);
+        }  
 
     }
     return EXIT_SUCCESS;
