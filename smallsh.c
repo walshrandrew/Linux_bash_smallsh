@@ -80,7 +80,7 @@ void built_in_cd(struct command_line *curr_command){
 
 
 void built_in_status(){
-    printf("Exit value: %d\n", status);
+    printf("exit value: %d\n", status);
 }
 
 
