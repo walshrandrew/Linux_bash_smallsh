@@ -88,41 +88,45 @@ void built_in_status(){
 }
 
 
-void other_commands(struct command_line *curr_command){
-    //while((pid = waitpid(-1, &wstatus, WNOHANG)) > 0) {...}
+void other_commands(struct command_line *curr_command) {
     pid_t p = fork();
-    if(p<0){
+    
+    if (p < 0) {
         perror("Failed Fork");
         exit(1);
-    } else if (p == 0){                                                 //child processes
-        if(execvp(curr_command->argv[0], curr_command->argv) == -1){    // if execvp fails
+    } 
+    else if (p == 0) {                                                   // Child process
+        if (execvp(curr_command->argv[0], curr_command->argv) == -1) {  
             perror("child command failed");
-            status = 1;                                                 // update status
-            exit(1);                                                    // terminate child
+            exit(1);                                                     // Exit child on failure
         }
-    }else {                                                             // parent process
-        if (curr_command->is_bg){
-            return ;
-        } else {                                                        // wait for foreground child to finish
-            int child;
-            pid_t w;
+    } 
+    else {                                                               // Parent process
+        if (curr_command->is_bg) {
+            printf("Background process started with PID %d\n", p);
+            fflush(stdout);
+        } 
+        else {                                                           // Foreground process handling
+            int child_status;
+            pid_t w = waitpid(p, &child_status, 0);
+            
+            if (w == -1) {
+                perror("waitpid");
+                status = 1;
+                exit(1);
+            }
 
-            do {
-                w = waitpid(p, &child, 0);
-                if (w == -1){
-                    perror("waitpid");
-                    status = 1;
-                    exit(1);
-                }
-                
-                if (WIFEXITED(child)){
-                    status = WEXITSTATUS(child);                           // storing exit status
-                } else if (WIFSIGNALED(child)){
-                    status = WTERMSIG(child);                              // storing exit signal
-                } while (!WIFEXITED(child) && !WFISIGNALED(child));
-        } while((pid = waitpid(-1, &wstatus, WNOHANG)) > 0);
-    }    
-} 
+            if (WIFEXITED(child_status)) {
+                status = WEXITSTATUS(child_status);                     // Store exit status
+            } else if (WIFSIGNALED(child_status)) {
+                status = WTERMSIG(child_status);                        // Store termination signal
+            }
+        }
+        // Reap background processes
+        int wstatus;
+        while ((p = waitpid(-1, &wstatus, WNOHANG)) > 0);
+    }
+}
 
 
 
