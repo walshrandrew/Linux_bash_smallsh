@@ -162,7 +162,8 @@ int main()
         if (curr_command->argc == 0) {
             free_command(curr_command);
             continue;
-
+        }
+        
         if (strcmp(curr_command->argv[0], "exit") == 0){
             free_command(curr_command);
             built_in_exit();
