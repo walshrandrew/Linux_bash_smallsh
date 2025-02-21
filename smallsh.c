@@ -35,21 +35,24 @@ void handle_SIGTSTP(int signo){
     write(STDOUT_FILENO, message, 15);
 }
 
-struct sigaction sa_INT;
-struct sigaction sa_TSTP;
 
-void signal_handlers(){
-    //SIGINT
-    sa_INT.sa_handler = handle_SIGINT;
-    sigemptyset(&sa_INT.sa_mask);
-    sa_INT.sa_flags = SA_RESTART; // restart system calls if interrupted
-    sigaction(SIGINT, &sa_INT, NULL);
-    //SIGTSTP
-    sa_TSTP.sa_handler = handle_SIGTSTP;
-    sigemptyset(&sa_TSTP.sa_mask);
-    sa_TSTP.sa_flags = SA_RESTART;
-    sigaction(SIGTSTP, &sa_TSTP, NULL);
+void signal_handler(){
+    struct sigaction SIGINT_action = {0}, SIGTSTP_action = {0};
+
+    // SIGINT
+    SIGINT_action.sa_handler = handle_SIGINT;
+    sigfillset(&SIGINT_action.sa_mask);
+    SIGINT_action.sa_flags = 0;
+    sigaction(SIGINT< &SIGINT_action, NULL);
+
+    // SIGINT
+    SIGTSTP_action.sa_handler = handle_SIGINT;
+    sigfillset(&SIGTSTP_action.sa_mask);
+    SIGTSTP_action.sa_flags = 0;
+    sigaction(SIGTSTP< &SIGTSTP_action, NULL);
 }
+
+
 
 void free_command(struct command_line *curr_command){
     if (curr_command){
@@ -176,7 +179,7 @@ void other_commands(struct command_line *curr_command) {
 
 int main()
 {
-    signal_handlers();
+    signal_handler();
     struct command_line *curr_command;
     while(true)
     {
