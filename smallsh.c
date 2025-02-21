@@ -102,7 +102,7 @@ void other_commands(struct command_line *curr_command) {
         if (curr_command->input_file){
             int input = open(curr_command->input_file, O_RDONLY);
             if (input == -1){
-                perror("failed to open input file");
+                fprintf(stderr, "cannot open %d for input\n", input);
                 exit(1);
             }
             dup2(input, STDIN_FILENO);
@@ -112,7 +112,7 @@ void other_commands(struct command_line *curr_command) {
         if (curr_command->output_file) {
             int output = open(curr_command->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
             if (output == -1){
-                perror("Failed to open output file");
+                fprintf(stderr, "cannot open %d for output", output);
                 exit(1);
             }
             dup2(output, STDOUT_FILENO);
@@ -163,7 +163,7 @@ int main()
             free_command(curr_command);
             continue;
         }
-        
+
         if (strcmp(curr_command->argv[0], "exit") == 0){
             free_command(curr_command);
             built_in_exit();
