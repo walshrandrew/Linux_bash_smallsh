@@ -28,7 +28,6 @@ void free_command(struct command_line *curr_command){
         for (int i = 0; i < curr_command->argc; i++) free(curr_command->argv[i]);
         free(curr_command);
     }
-
 }
 
 
@@ -75,19 +74,12 @@ void built_in_cd(struct command_line *curr_command){
 
     if(curr_command->argc > 1){
         chdir(curr_command->argv[1]);
-        //FOR DEBUGGING: char *curr_dir = getcwd(cwd, sizeof(cwd));
-        //FOR DEBUGGING: printf("Directory after argv[1]: %s", curr_dir);
-
     } else if (curr_command->argc == 1){
         chdir(getenv("HOME"));
-        //char *curr_dir = getcwd(cwd, sizeof(cwd));
-        //printf("Directory after argv[1]: %s", curr_dir);
     } else {
         printf("build_in_cd failed\n");
         return;
     }
-
-    //printf("%s", curr_dir);
 }
 
 
@@ -102,27 +94,35 @@ void other_commands(struct command_line *curr_command){
     if(p<0){
         perror("Failed Fork");
         exit(1);
-    } else if (p == 0){ //child processes
-        if(execvp(curr_command->argv[0], curr_command->argv) == -1){   // if execvp fails
+    } else if (p == 0){                                                 //child processes
+        if(execvp(curr_command->argv[0], curr_command->argv) == -1){    // if execvp fails
             perror("child command failed");
-            status = 1;                                                // update status
-            exit(1);                                                   // terminate child
+            status = 1;                                                 // update status
+            exit(1);                                                    // terminate child
         }
-    }else {    // parent process
+    }else {                                                             // parent process
         if (curr_command->is_bg){
             return ;
-        } else { // wait for foreground child to finish
+        } else {                                                        // wait for foreground child to finish
             int child;
-            waitpid(p, &child, 0);
+            pid_t w;
 
-            if (WIFEXITED(child)){
-                status = WEXITSTATUS(child);                        // storing exit status
-            } else if (WIFSIGNALED(child)){
-                status = WTERMSIG(child);                           // storing exit signal
-            }
-        }
+            do {
+                w = waitpid(p, &child, 0);
+                if (w == -1){
+                    perror("waitpid");
+                    status = 1;
+                    exit(1);
+                }
+                
+                if (WIFEXITED(child)){
+                    status = WEXITSTATUS(child);                           // storing exit status
+                } else if (WIFSIGNALED(child)){
+                    status = WTERMSIG(child);                              // storing exit signal
+                } while (!WIFEXITED(child) && !WFISIGNALED(child));
+        } while((pid = waitpid(-1, &wstatus, WNOHANG)) > 0);
     }    
-}
+} 
 
 
 
