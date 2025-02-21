@@ -160,7 +160,7 @@ int main()
     {
         curr_command = parse_input();
 
-        if (curr_command->argc == 0) {
+        if (curr_command->argc == 0 || (curr_command->argv[0] && strcmp(curr_command->argv[0], "#") == 0)) {
             free_command(curr_command);
             continue;
         }
