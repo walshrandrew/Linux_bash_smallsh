@@ -37,19 +37,12 @@ void handle_SIGTSTP(int signo){
 
 
 void signal_handler(){
-    struct sigaction SIGINT_action = {0}, SIGTSTP_action = {0};
+    struct sigaction SIGTSTP_action = {0};
 
-    // SIGINT
-    SIGINT_action.sa_handler = handle_SIGINT;
-    sigfillset(&SIGINT_action.sa_mask);
-    SIGINT_action.sa_flags = 0;
-    sigaction(SIGINT< &SIGINT_action, NULL);
-
-    // SIGINT
-    SIGTSTP_action.sa_handler = handle_SIGINT;
+    SIGTSTP_action.sa_handler = handle_SIGTSTP;
     sigfillset(&SIGTSTP_action.sa_mask);
     SIGTSTP_action.sa_flags = 0;
-    sigaction(SIGTSTP< &SIGTSTP_action, NULL);
+    sigaction(SIGTSTP, &SIGTSTP_action, NULL);
 }
 
 
@@ -123,7 +116,15 @@ void other_commands(struct command_line *curr_command) {
     if (p < 0) {
         perror("Failed Fork");
         exit(1);
-    } else if (p == 0) {                                                   // Child process
+    } else if (p == 0) {                                                   // Child process  
+        signal(SIGTSTP, SIG_DFL);
+
+        if (!curr_command->is_bg){
+            signal(SIGTSTP, SIG_DFL);
+
+        }
+        
+        
         if (curr_command->input_file){
             int input = open(curr_command->input_file, O_RDONLY);
             if (input == -1){
@@ -154,7 +155,7 @@ void other_commands(struct command_line *curr_command) {
             printf("Background process started with PID %d\n", p);
             fflush(stdout);
         } 
-        else {                                                           // Foreground process handling
+        else {                                                           // Foreground process handling           
             int child_status;
             pid_t w = waitpid(p, &child_status, 0);
             
@@ -179,8 +180,11 @@ void other_commands(struct command_line *curr_command) {
 
 int main()
 {
+    signal(SIGINT, SIG_IGN);
     signal_handler();
+
     struct command_line *curr_command;
+    
     while(true)
     {
         curr_command = parse_input();
