@@ -4,6 +4,8 @@
 #include <string.h>
 #include <sys/types.h> 
 #include <sys/wait.h> 
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h> 
 
 #define INPUT_LENGTH 2048
@@ -94,8 +96,27 @@ void other_commands(struct command_line *curr_command) {
     if (p < 0) {
         perror("Failed Fork");
         exit(1);
-    } 
-    else if (p == 0) {                                                   // Child process
+    } else if (p == 0) {                                                   // Child process
+        if (curr_command->input_file){
+            int input = open(curr_command->input_file, O_RDONLY);
+            if (input == -1){
+                perror("failed to open input file");
+                exit(1);
+            }
+            dup2(input, STDIN_FILENO);
+            close(input);
+        }
+
+        if (curr_command->output_file) {
+            int output = open(curr_command->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            if (output == -1){
+                perror("Failed to open output file");
+                exit(1);
+            }
+            dup2(output, STDOUT_FILENO);
+            close(output);
+        }
+        
         if (execvp(curr_command->argv[0], curr_command->argv) == -1) {  
             perror("child command failed");
             exit(1);                                                     // Exit child on failure
