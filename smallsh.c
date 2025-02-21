@@ -13,6 +13,7 @@
 #define MAX_ARGS 512
 
 int status = 0;
+bool foreground = true;
 
 struct command_line
 {
@@ -26,9 +27,17 @@ struct command_line
 
 
 void handle_SIGTSTP(int signo){
-    char *message = "Caught SIGTSTP\n";
-    write(STDOUT_FILENO, message, 15);
-}
+    if (!foreground){
+        char *message = "Entering foreground-only mode (& is now ignored)";
+        write(STDOUT_FILENO, message, 49);
+        foreground = 1;
+    } else {
+        char *message = "\nExiting foreground-only mode\n";
+        write(STDOUT_FILENO, message, 29);
+        foreground = 0;
+    }
+    }
+
 
 
 void signal_handler(){
@@ -112,12 +121,11 @@ void other_commands(struct command_line *curr_command) {
         perror("Failed Fork");
         exit(1);
     } else if (p == 0) {                                                   // Child process  
-        signal(SIGTSTP, SIG_DFL);
+        signal(SIGTSTP, SIG_IGN);
         if (!curr_command->is_bg){
             signal(SIGINT, SIG_DFL);
         }
-        
-        
+         
         if (curr_command->input_file){
             int input = open(curr_command->input_file, O_RDONLY);
             if (input == -1){
@@ -139,13 +147,13 @@ void other_commands(struct command_line *curr_command) {
         }
         
         if (execvp(curr_command->argv[0], curr_command->argv) == -1) {  
-            perror("child command failed");
+            fprintf(stderr, "%s: no such file or directory\n", curr_command->argv[0]);
             exit(1);                                                     // Exit child on failure
         }
     } 
     else {                                                               // Parent process
         if (curr_command->is_bg) {
-            printf("Background process started with PID %d\n", p);
+            printf("background pid is %d\n", p);
             fflush(stdout);
         } 
         else {                                                           // Foreground process handling           
@@ -162,11 +170,10 @@ void other_commands(struct command_line *curr_command) {
                 status = WEXITSTATUS(child_status);                     // Store exit status
             } else if (WIFSIGNALED(child_status)) {
                 status = WTERMSIG(child_status);                        // Store termination signal
+                printf("terminated by signal %d\n", status);
+                fflush(stdout);
             }
         }
-        // Reap background processes
-        int wstatus;
-        while ((p = waitpid(-1, &wstatus, WNOHANG)) > 0);
     }
 }
 
@@ -180,7 +187,23 @@ int main()
 
     while(true)
     {
+        // Reap background processes
+        int bgStatus;
+        pid_t bgPID;
+
+        while ((bgPID = waitpid(-1, &bgStatus, WNOHANG)) > 0){
+            if (WIFEXITED(bgStatus)){
+                printf("background pid %d is done: exit value %d\n", bgPID, WEXITSTATUS(bgStatus));
+            } else if (WIFSIGNALED(bgStatus)){
+                printf("background pid %d is done: terminated by signal %d\n", bgPID, WTERMSIG(bgStatus));
+            }
+            fflush(stdout);
+        }
+
         curr_command = parse_input();
+
+        if (foreground)
+            curr_command->is_bg = false;
 
         if (curr_command->argc == 0) {
             free_command(curr_command);
