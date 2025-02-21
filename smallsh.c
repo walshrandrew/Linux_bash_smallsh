@@ -47,7 +47,7 @@ struct command_line *parse_input()
     // Tokenize input
     char *token = strtok(input, " \n");
     while(token) {
-        if (token[0] == "#") break;
+        if (token[0] == '#') break;
         
         if(!strcmp(token, "<")){
             curr_command->input_file = strdup(strtok(NULL, " \n"));
