@@ -65,17 +65,11 @@ struct command_line *parse_input()
 
 
 void built_in_exit(){
-    // kill background process if need be when exiting
-    // Maybe free mem too? prob not. if need be you will need to have curr_command as a function input
     exit(0);
 }
 
 
 void built_in_cd(struct command_line *curr_command){
-    //char cwd[MAX_ARGS];
-    //char *curr_dir = getcwd(cwd, sizeof(cwd));
-    //printf("Directory before function if statememnts: %s\n", curr_dir);
-
     if(curr_command->argc > 1){
         chdir(curr_command->argv[1]);
     } else if (curr_command->argc == 1){
@@ -90,6 +84,9 @@ void built_in_cd(struct command_line *curr_command){
 void built_in_status(){
     printf("exit value: %d\n", status);
 }
+
+void sighandler(int num);
+
 
 
 void other_commands(struct command_line *curr_command) {
