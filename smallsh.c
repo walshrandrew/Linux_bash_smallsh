@@ -24,11 +24,6 @@ struct command_line
 };
 
 
-void handle_SIGINT(int signo){
-  char* message = "Caught SIGINT\n";
-  write(STDOUT_FILENO, message, 14);
-}
-
 
 void handle_SIGTSTP(int signo){
     char *message = "Caught SIGTSTP\n";
@@ -118,17 +113,15 @@ void other_commands(struct command_line *curr_command) {
         exit(1);
     } else if (p == 0) {                                                   // Child process  
         signal(SIGTSTP, SIG_DFL);
-
         if (!curr_command->is_bg){
-            signal(SIGTSTP, SIG_DFL);
-
+            signal(SIGINT, SIG_DFL);
         }
         
         
         if (curr_command->input_file){
             int input = open(curr_command->input_file, O_RDONLY);
             if (input == -1){
-                fprintf(stderr, "cannot open %d for input\n", input);
+                fprintf(stderr, "cannot open %s for input\n", curr_command->input_file);
                 exit(1);
             }
             dup2(input, STDIN_FILENO);
@@ -138,7 +131,7 @@ void other_commands(struct command_line *curr_command) {
         if (curr_command->output_file) {
             int output = open(curr_command->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
             if (output == -1){
-                fprintf(stderr, "cannot open %d for output", output);
+                fprintf(stderr, "cannot open %s for output", curr_command->output_file);
                 exit(1);
             }
             dup2(output, STDOUT_FILENO);
@@ -184,7 +177,7 @@ int main()
     signal_handler();
 
     struct command_line *curr_command;
-    
+
     while(true)
     {
         curr_command = parse_input();
