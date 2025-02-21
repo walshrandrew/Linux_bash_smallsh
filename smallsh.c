@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h> 
+#include <signal.h>
 
 #define INPUT_LENGTH 2048
 #define MAX_ARGS 512
@@ -22,6 +23,33 @@ struct command_line
     bool is_bg;
 };
 
+
+void handle_SIGINT(int signo){
+  char* message = "Caught SIGINT\n";
+  write(STDOUT_FILENO, message, 14);
+}
+
+
+void handle_SIGTSTP(int signo){
+    char *message = "Caught SIGTSTP\n";
+    write(STDOUT_FILENO, message, 15);
+}
+
+struct sigaction sa_INT;
+struct sigaction sa_TSTP;
+
+void signal_handlers(){
+    //SIGINT
+    sa_INT.sa_handler = handle_SIGINT;
+    sigemptyset(&sa_INT.sa_mask);
+    sa_INT.sa_flags = SA_RESTART; // restart system calls if interrupted
+    sigaction(SIGINT, &sa_INT, NULL);
+    //SIGTSTP
+    sa_TSTP.sa_handler = handle_SIGTSTP;
+    sigemptyset(&sa_TSTP.sa_mask);
+    sa_TSTP.sa_flags = SA_RESTART;
+    sigaction(SIGTSTP, &sa_TSTP, NULL);
+}
 
 void free_command(struct command_line *curr_command){
     if (curr_command){
@@ -84,9 +112,6 @@ void built_in_cd(struct command_line *curr_command){
 void built_in_status(){
     printf("exit value: %d\n", status);
 }
-
-void sighandler(int num);
-
 
 
 void other_commands(struct command_line *curr_command) {
@@ -151,6 +176,7 @@ void other_commands(struct command_line *curr_command) {
 
 int main()
 {
+    signal_handlers();
     struct command_line *curr_command;
     while(true)
     {
