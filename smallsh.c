@@ -13,7 +13,7 @@
 #define MAX_ARGS 512
 
 int status = 0;
-bool foreground = true;
+bool foreground = false;
 
 struct command_line
 {
@@ -29,7 +29,7 @@ struct command_line
 void handle_SIGTSTP(int signo){
     if (!foreground){
         char *message = "Entering foreground-only mode (& is now ignored)";
-        write(STDOUT_FILENO, message, 51);
+        write(STDOUT_FILENO, message, 49);
         foreground = 1;
     } else {
         char *message = "\nExiting foreground-only mode\n";
@@ -152,7 +152,7 @@ void other_commands(struct command_line *curr_command) {
         }
     } 
     else {                                                               // Parent process
-        if (curr_command->is_bg && foreground) {
+        if (curr_command->is_bg && !foreground) {
             printf("background pid is %d\n", p);
             fflush(stdout);
         } 
