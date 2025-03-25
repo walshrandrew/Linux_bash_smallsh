@@ -1,5 +1,5 @@
 # assignment4 os1 smallsh
-This program implements a subset of features from a Linux Bash Shell.
+This program implements a subset of features from a Linux Bash Shell.  
 - Provide a prompt for running commands
 - Handle blank lines and comments, which are lines beginning with the # character
 - Executes 3 commands: exit, cd, and status built into the shell
