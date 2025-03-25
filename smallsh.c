@@ -9,11 +9,14 @@
 #include <unistd.h> 
 #include <signal.h>
 
+
 #define INPUT_LENGTH 2048
 #define MAX_ARGS 512
 
-int status = 0;
-bool foreground = false;
+
+int status = 0;            // Exit status of last foreground command
+bool foreground = false;   // Flag status for foreground-only mode; While True, Background processes disabled
+
 
 struct command_line
 {
@@ -21,11 +24,11 @@ struct command_line
     int argc;
     char *input_file;
     char *output_file;
-    bool is_bg;
+    bool is_bg;        // Flag status for background processes (&)
 };
 
 
-
+//FUNCTION: Toggles foreground-only mode if received SIGTSTP
 void handle_SIGTSTP(int signo){
     if (!foreground){
         char *message = "Entering foreground-only mode (& is now ignored)";
@@ -36,10 +39,10 @@ void handle_SIGTSTP(int signo){
         write(STDOUT_FILENO, message, 29);
         foreground = 0;
     }
-    }
+}
 
 
-
+//FUNCTION: Configures signal handling for SIGTSTP
 void signal_handler(){
     struct sigaction SIGTSTP_action = {0};
 
@@ -50,7 +53,7 @@ void signal_handler(){
 }
 
 
-
+//FUNCTION: Frees allocated memory for a command structure
 void free_command(struct command_line *curr_command){
     if (curr_command){
         if (curr_command->input_file) free(curr_command->input_file);
@@ -61,6 +64,7 @@ void free_command(struct command_line *curr_command){
 }
 
 
+//Parse user input and store commands
 struct command_line *parse_input()
 {
     char input[INPUT_LENGTH];
@@ -75,7 +79,7 @@ struct command_line *parse_input()
     // Tokenize input
     char *token = strtok(input, " \n");
     while(token) {
-        if (token[0] == '#') break;
+        if (token[0] == '#') break;    //ignores comments (#)
         
         if(!strcmp(token, "<")){
             curr_command->input_file = strdup(strtok(NULL, " \n"));
@@ -97,6 +101,7 @@ void built_in_exit(){
 }
 
 
+//FUNCTION: Allows user to use "cd" commands
 void built_in_cd(struct command_line *curr_command){
     if(curr_command->argc > 1){
         chdir(curr_command->argv[1]);
@@ -109,11 +114,14 @@ void built_in_cd(struct command_line *curr_command){
 }
 
 
+//FUNCTION: Shows last exit status
 void built_in_status(){
     printf("exit value: %d\n", status);
 }
 
-
+/*FUNCTION: Supports Input/Output redirection and any non built-in commands
+            Supports running commands in foreground and background processes 
+*/
 void other_commands(struct command_line *curr_command) {
     pid_t p = fork();
     
@@ -209,7 +217,7 @@ int main()
             free_command(curr_command);
             continue;
         }
-
+        // Check for "Built-in" commands
         if (strcmp(curr_command->argv[0], "exit") == 0){
             free_command(curr_command);
             built_in_exit();
