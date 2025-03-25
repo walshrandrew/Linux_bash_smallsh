@@ -100,32 +100,32 @@ background pid is 4941
 : kill -15 4941
 background pid 4941 is done: terminated by signal 15
 : pwd
-/nfs/stak/users/name/CS344/prog3
-: cd
-: pwd
-/nfs/stak/users/name
-: cd CS344
-: pwd
-/nfs/stak/users/name/CS344
-: echo 4867
-4867
-: ^C^Z
-Entering foreground-only mode (& is now ignored)
-: date
- Mon Jan  2 11:24:33 PST 2017
-: sleep 5 &
-: date
- Mon Jan  2 11:24:38 PST 2017
-: ^Z
-Exiting foreground-only mode
-: date
- Mon Jan  2 11:24:39 PST 2017
-: sleep 5 &
-background pid is 4963
-: date
- Mon Jan 2 11:24:39 PST 2017
-: exit
-$  
+/nfs/stak/users/name/CS344/prog3  
+: cd  
+: pwd  
+/nfs/stak/users/name  
+: cd CS344  
+: pwd  
+/nfs/stak/users/name/CS344  
+: echo 4867  
+4867  
+: ^C^Z    
+Entering foreground-only mode (& is now ignored)  
+: date  
+ Mon Jan  2 11:24:33 PST 2017  
+: sleep 5 &  
+: date  
+ Mon Jan  2 11:24:38 PST 2017  
+: ^Z  
+Exiting foreground-only mode  
+: date  
+ Mon Jan  2 11:24:39 PST 2017  
+: sleep 5 &  
+background pid is 4963  
+: date  
+ Mon Jan 2 11:24:39 PST 2017  
+: exit  
+$    
 : cd CS344  
 : pwd  
 /nfs/stak/users/name/CS344  
