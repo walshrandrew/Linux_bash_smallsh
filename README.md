@@ -8,13 +8,13 @@ This program implements a subset of features from a Linux Bash Shell.
 - Supports running commands in foreground and background processes with "&" at the end of a command.
 - Implement custom handlers for 2 signals, SIGINT and SIGTSTP (CTRL+C and CTRL+Z)
 
-Example program execution:
-$ smallsh
-: ls
-junk   smallsh    smallsh.c
-: ls > junk
-: status
-exit value 0
+Example program execution:  
+$ smallsh  
+: ls  
+junk   smallsh    smallsh.c  
+: ls > junk  
+: status  
+exit value 0  
 : cat junk
 junk
 smallsh
